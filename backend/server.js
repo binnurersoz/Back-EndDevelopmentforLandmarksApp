@@ -7,14 +7,15 @@ const { v4: uuidv4 } = require("uuid");
 const app = express();
 const PORT = 5000;
 
-// Orta katmanlar
+// Middlewares
 app.use(cors());
 app.use(bodyParser.json());
 
+// File paths
 const landmarksFile = "./data/landmarks.json";
 const visitedFile = "./data/visited.json";
 
-// Yardımcı fonksiyonlar
+
 function readData(file) {
     return JSON.parse(fs.readFileSync(file, "utf-8"));
 }
@@ -88,27 +89,27 @@ app.get("/visited/:id", (req, res) => {
 // Add a visited record
 app.post("/visited", (req, res) => {
     try {
-        const visited = readData(visitedFile); // visited.json dosyasını oku
-        console.log("Received data:", req.body); // Gelen veriyi logla
+        const visited = readData(visitedFile); 
+        console.log("Received data:", req.body); 
 
-        // Gelen verilerin doğru olduğundan emin olun
+        
         if (!req.body.landmark_id || !req.body.visited_date || !req.body.visitor_name) {
             return res.status(400).json({ message: "Missing required data fields" });
         }
 
         const newVisited = { id: uuidv4(), ...req.body };
 
-        // Yeni veriyi ekle
+        
         visited.push(newVisited);
         
-        // visited.json dosyasını güncelle
+        
         writeData(visitedFile, visited);
         
-        console.log("Data successfully written to visited.json:", newVisited); // Yazma işlemi sonrası logla
+        console.log("Data successfully written to visited.json:", newVisited); 
 
-        res.status(201).json(newVisited); // Başarıyla eklenen veriyi geri gönder
+        res.status(201).json(newVisited); 
     } catch (error) {
-        console.error("Error writing to visited.json:", error); // Hata durumunda logla
+        console.error("Error writing to visited.json:", error); 
         res.status(500).json({ message: "Error occurred while adding visited data" });
     }
 });

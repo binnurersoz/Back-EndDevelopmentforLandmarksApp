@@ -1,22 +1,12 @@
 [
   {
-    "id": "188b40ad-356c-482d-b6d9-7135fe7985ae",
-    "name": "a",
+    "id": "c55f1d94-a0f4-45c6-aa8e-4830dab81189",
+    "name": "Akyaka",
     "location": {
-      "latitude": "36.486085",
-      "longitude": "28.483928"
+      "latitude": "37.051301",
+      "longitude": "28.323790"
     },
-    "description": "a",
-    "category": "a"
-  },
-  {
-    "id": "9b99c3e9-69af-419d-9af5-30ac9f9bd75d",
-    "name": "a",
-    "location": {
-      "latitude": "36.718338",
-      "longitude": "28.392385"
-    },
-    "description": "a",
-    "category": "a"
+    "description": "-",
+    "category": "Natural"
   }
 ]
