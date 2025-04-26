@@ -1,0 +1,22 @@
+[
+  {
+    "id": "188b40ad-356c-482d-b6d9-7135fe7985ae",
+    "name": "a",
+    "location": {
+      "latitude": "36.486085",
+      "longitude": "28.483928"
+    },
+    "description": "a",
+    "category": "a"
+  },
+  {
+    "id": "9b99c3e9-69af-419d-9af5-30ac9f9bd75d",
+    "name": "a",
+    "location": {
+      "latitude": "36.718338",
+      "longitude": "28.392385"
+    },
+    "description": "a",
+    "category": "a"
+  }
+]

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Landmark Creator</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #map {
+            height: 500px;
+            width: 80%;
+            margin: auto;
+            border: 2px solid black;
+            border-radius: 8px;
+        }
+        #landmarkList {
+            margin-top: 10px;
+            text-align: left;
+            width: 80%;
+            margin: auto;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Click on the Map to Add Landmarks</h2>
+    <div id="map"></div>
+    
+    <h3>Add New Landmark Information</h3>
+    <form id="landmarkInfoForm">
+      <input type="text" id="name" placeholder="Landmark Name" required><br>
+      <input type="text" id="description" placeholder="Description"><br>
+      <input type="text" id="category" placeholder="Category (e.g., historical)" required><br>
+      <button type="submit">Save Information</button>
+    </form>
+    
+
+    <h2>Mark Landmark as Visited</h2>
+    <form id="visitedForm">
+        <label for="landmark_id">Landmark ID:</label>
+        <input type="text" id="landmark_id" name="landmark_id" required>
+        <br><br>
+    
+        <label for="visited_date">Visit Date:</label>
+        <input type="date" id="visited_date" name="visited_date" required>
+        <br><br>
+    
+        <label for="visitor_name">Visitor Name:</label>
+        <input type="text" id="visitor_name" name="visitor_name" required>
+        <br><br>
+    
+        <button type="submit">Mark as Visited</button>
+    </form>
+    
+
+
+    <h3>Selected Landmarks</h3>
+    <ul id="landmarkList"></ul>
+    
+    <button onclick="sendLandmarks()">Add Notes</button>
+    <button onclick="sendLandmarks()">Visited Landmarks</button>
+    <button onclick="sendLandmarks()">Create Visiting Plans</button>
+
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Initialize map
+        var map = L.map('map').setView([20, 0], 2); // Default global view
+
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        let landmarks = []; // Store landmarks
+
+        // Add landmark on map click
+        map.on('click', function(e) {
+            var lat = e.latlng.lat.toFixed(6);
+            var lng = e.latlng.lng.toFixed(6);
+            
+            // Create marker
+            var marker = L.marker([lat, lng]).addTo(map)
+                .bindPopup(`Lat: ${lat}, Lng: ${lng}`)
+                .openPopup();
+
+            // Store landmark data
+            landmarks.push({ latitude: lat, longitude: lng });
+            updateLandmarkList();
+        });
+
+        // Update landmark list in UI
+        function updateLandmarkList() {
+            let list = document.getElementById('landmarkList');
+            list.innerHTML = "";
+            landmarks.forEach((point, index) => {
+                let li = document.createElement('li');
+                li.textContent = `Landmark ${index + 1}: Lat ${point.latitude}, Lng ${point.longitude}`;
+                list.appendChild(li);
+            });
+        }
+
+        // Send landmarks to backend
+        function sendLandmarks() {
+            if (landmarks.length === 0) {
+                alert("No landmarks selected!");
+                return;
+            }
+
+            fetch('http://localhost:5000/api/landmarks', { // Replace with actual backend URL
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ landmarks: landmarks })
+            })
+            .then(response => response.json())
+            .then(data => alert("Data sent successfully: " + JSON.stringify(data)))
+            .catch(error => console.error('Error:', error));
+        }
+
+
+
+        // Add information for a new landmark
+        document.getElementById("landmarkInfoForm").addEventListener("submit", function (e) {
+            e.preventDefault(); // Prevent page refresh
+
+            if (landmarks.length === 0) {
+                alert("Please select a location on the map first!");
+                return;
+            }
+
+            // Get the last selected landmark location
+            const lastPoint = landmarks[landmarks.length - 1];
+
+            const name = document.getElementById("name").value;
+            const description = document.getElementById("description").value;
+            const category = document.getElementById("category").value;
+
+            // Combine all the landmark details
+            const newLandmark = {
+                name: name,
+                location: {
+                    latitude: lastPoint.latitude,
+                    longitude: lastPoint.longitude
+                },
+                description: description,
+                category: category
+            };
+
+            // Send the data to the backend
+            fetch('http://localhost:5000/landmarks', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newLandmark)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert("Successfully added: " + JSON.stringify(data));
+                document.getElementById("landmarkInfoForm").reset(); // Reset the form after submission
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+
+        
+        // Handling the "Mark as Visited" form submission
+        const visitedForm = document.getElementById('visitedForm');
+
+        visitedForm.addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent page refresh
+
+            // Get form data
+            const landmarkId = document.getElementById('landmark_id').value;
+            const visitedDate = document.getElementById('visited_date').value;
+            const visitorName = document.getElementById('visitor_name').value;
+
+            // Create visited data object
+            const visitedData = {
+                landmark_id: landmarkId,
+                visited_date: visitedDate,
+                visitor_name: visitorName
+            };
+
+            // Send visited data to the backend
+            fetch('http://localhost:5000/visited', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(visitedData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Visited landmark added:', data);
+                alert("Visited landmark added: " + JSON.stringify(data));
+
+                // Reset the form after submission
+                visitedForm.reset();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("Error adding visited landmark.");
+            });
+        });
+    </script>
+</body>
+</html>
